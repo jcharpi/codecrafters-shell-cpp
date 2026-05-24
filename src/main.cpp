@@ -8,13 +8,16 @@ int main() {
   std::cerr << std::unitbuf;
   while (true) {
     std::cout << "$ ";
-    std::string command;
-    std::getline(std::cin, command);
+    std::string input;
+    std::getline(std::cin, input);
 
-    if (command == "exit") {
+    if (input == "exit") {
       break;
+    } else if (input.substr(0, 4) == "echo") {
+      std::cout << input.substr(4, input.size()) << "\n";
+    } else {
+      std::cout << input.substr(0, 5);
+      std::cout << std::format("{}: command not found\n", input);
     }
-    
-    std::cout << std::format("{}: command not found\n", command);
   }
 }
