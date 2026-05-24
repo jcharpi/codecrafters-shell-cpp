@@ -57,9 +57,9 @@ int main() {
       } else { // Executable
         std::string executablePath = executableInPATH(args);
         if (!executablePath.empty()) {
-          std::cout << cmd << " is " << executablePath << "\n";
+          std::cout << args << " is " << executablePath << "\n";
         } else {
-          std::cout << cmd << ": not found\n";
+          std::cout << args << ": not found\n";
         }
       }
     } else { // Unrecognized
