@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <format>
 
 int main() {
   // Flush after every std::cout / std:cerr
@@ -7,4 +8,7 @@ int main() {
   std::cerr << std::unitbuf;
 
   std::cout << "$ ";
+  std::string command;
+  std::getline(std::cin, command);
+  std::cout << std::format("{}: command not found\n", command);
 }
