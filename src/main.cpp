@@ -14,9 +14,8 @@ int main() {
     if (input == "exit") {
       break;
     } else if (input.substr(0, 4) == "echo") {
-      std::cout << input.substr(4, input.size()) << "\n";
+      std::cout << input.substr(6, input.size()) << "\n";
     } else {
-      std::cout << input.substr(0, 5);
       std::cout << std::format("{}: command not found\n", input);
     }
   }
