@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <format>
@@ -40,6 +41,8 @@ void handleBuiltin(std::string cmd, std::string args) {
     std::exit(EXIT_SUCCESS);
   } else if (cmd == "echo") {
     std::cout << args << "\n";
+  } else if (cmd == "pwd") {
+    std::cout << std::filesystem::current_path() << "\n";
   } else if (cmd == "type") {
     if (std::find(builtins.begin(), builtins.end(), args) != builtins.end()) { // Builtin
       std::cout << args << " is a shell builtin\n";
