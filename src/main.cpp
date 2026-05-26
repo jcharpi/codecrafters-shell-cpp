@@ -42,7 +42,7 @@ void handleBuiltin(std::string cmd, std::string args) {
   } else if (cmd == "echo") {
     std::cout << args << "\n";
   } else if (cmd == "pwd") {
-    std::cout << std::filesystem::current_path() << "\n";
+    std::cout << std::filesystem::current_path().string() << "\n";
   } else if (cmd == "type") {
     if (std::find(builtins.begin(), builtins.end(), args) != builtins.end()) { // Builtin
       std::cout << args << " is a shell builtin\n";
