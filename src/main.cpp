@@ -15,7 +15,7 @@ constexpr char PATH_DELIMITER = ';';
 constexpr char PATH_DELIMITER = ':';
 #endif
 
-const std::vector<std::string> builtins = {"exit", "echo", "type"};
+const std::vector<std::string> builtins = {"exit", "echo", "type", "pwd"};
 
 bool isFileExecutable(const std::string& path) {
   return access(path.c_str(), X_OK) == 0;
