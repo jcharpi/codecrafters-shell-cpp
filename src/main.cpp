@@ -37,7 +37,12 @@ std::string executable_in_path(const std::string& file_name) {
 void handle_cd(const std::vector<std::string>& args) {
   if (args.size() < 2) return;
   std::string path = args[1];
-  if (std::filesystem::is_directory(path)) {
+  if (path == "~") {
+    const char* home = std::getenv("HOME");
+    if (home) {
+      std::filesystem::current_path(home);
+    }
+  } else if (std::filesystem::is_directory(path)) {
     std::filesystem::current_path(path);
   } else {
     std::cerr << "cd: " << path << ": No such file or directory\n";
