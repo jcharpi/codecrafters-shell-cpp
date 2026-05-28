@@ -2,15 +2,14 @@
 #include <filesystem>
 #include <functional>
 #include <iostream>
+#include <sstream>
 #include <string>
-#include <format>
 #include <unordered_map>
 #include <vector>
-#include <sstream>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-#ifdef _WIN32 
+#ifdef _WIN32
 constexpr char PATH_DELIMITER = ';';
 #else
 constexpr char PATH_DELIMITER = ':';
@@ -21,12 +20,12 @@ bool isFileExecutable(const std::string& path) {
 }
 
 std::string executableInPATH(const std::string& fileName) {
-  const char* directories = std::getenv("PATH");
-  if (!directories) return "";
+  const char* rawPath = std::getenv("PATH");
+  if (!rawPath) return "";
 
-  std::stringstream ss_directories(directories);
+  std::stringstream pathStream(rawPath);
   std::string directory;
-  while (std::getline(ss_directories, directory, PATH_DELIMITER)) {
+  while (std::getline(pathStream, directory, PATH_DELIMITER)) {
     std::string fullPath = (std::filesystem::path(directory) / fileName).string();
     if (isFileExecutable(fullPath)) {
       return fullPath;
@@ -37,7 +36,7 @@ std::string executableInPATH(const std::string& fileName) {
 
 bool isBuiltin(const std::string& cmd);
 
-void handleExit(const std::vector<std::string>& args) {
+void handleExit(const std::vector<std::string>&) {
   std::exit(EXIT_SUCCESS);
 }
 
@@ -48,7 +47,7 @@ void handleEcho(const std::vector<std::string>& args) {
   std::cout << "\n";
 }
 
-void handlePwd(const std::vector<std::string>& args) {
+void handlePwd(const std::vector<std::string>&) {
   std::cout << std::filesystem::current_path().string() << "\n";
 }
 
@@ -57,16 +56,16 @@ void handleType(const std::vector<std::string>& args) {
 
   if (isBuiltin(target)) {
     std::cout << target << " is a shell builtin\n";
-  } else if (std::string file_path = executableInPATH(target); !file_path.empty()) {
-    std::cout << target << " is " << file_path << "\n";
+  } else if (std::string filePath = executableInPATH(target); !filePath.empty()) {
+    std::cout << target << " is " << filePath << "\n";
   } else {
     std::cout << target << ": not found\n";
   }
 }
 
 const std::unordered_map<std::string, std::function<void(const std::vector<std::string>& args)>> builtins {
-  {"exit", handleExit},
   {"echo", handleEcho},
+  {"exit", handleExit},
   {"pwd", handlePwd},
   {"type", handleType},
 };
@@ -82,37 +81,34 @@ void handleBuiltin(const std::vector<std::string>& args) {
 }
 
 std::vector<std::string> splitArgs(const std::string& input) {
-  std::vector<std::string> argsList;
-  std::stringstream ss_args(input);
-  for (std::string arg; ss_args >> arg;) {
-    argsList.push_back(arg);
+  std::vector<std::string> args;
+  std::stringstream inputStream(input);
+  for (std::string arg; inputStream >> arg;) {
+    args.push_back(arg);
   }
-  return argsList;
+  return args;
 }
 
-void handleExecutable(const std::string& file_path, std::vector<std::string>& args) {
+// args must be non-const: data() returns char* only on non-const strings, required by execvp
+void handleExecutable(const std::string& filePath, std::vector<std::string>& args) {
   std::vector<char*> argv;
-  argv.reserve(args.size() + 1); // +1 for the nullptr at the end
+  argv.reserve(args.size() + 1); // +1 for the null terminator execvp requires
   for (std::string& arg : args) {
     argv.push_back(arg.data());
   }
   argv.push_back(nullptr);
 
-  // Stage 1: Fork shell process into two processes
   pid_t pid = fork();
   if (pid == -1) {
     std::cerr << "handleExecutable(): fork failed\n";
-    
     return;
   }
 
-  if (pid == 0) { // Child process
-    // Stage 2: Execute
-    execvp(file_path.c_str(), argv.data());
+  if (pid == 0) { // child process (pid == 0 is the POSIX convention for the forked child)
+    execvp(filePath.c_str(), argv.data());
     std::cerr << "handleExecutable(): execute failed\n";
     std::exit(EXIT_FAILURE);
-  } else { // Main, parent process
-    // Stage 3: Wait for child to execute
+  } else { // parent process
     if (waitpid(pid, nullptr, 0) == -1) {
       std::cerr << "handleExecutable(): wait failed\n";
     }
@@ -137,10 +133,10 @@ int main() {
 
     if (isBuiltin(cmd)) {
       handleBuiltin(args);
-    } else if (std::string file_path = executableInPATH(cmd); !file_path.empty()) {
-      handleExecutable(file_path, args);
+    } else if (std::string filePath = executableInPATH(cmd); !filePath.empty()) {
+      handleExecutable(filePath, args);
     } else {
-      std::cout << std::format("{}: command not found\n", cmd);
+      std::cout << cmd << ": command not found\n";
     }
   }
 }
