@@ -8,6 +8,7 @@
 #include <vector>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <cctype>
 
 #ifdef _WIN32
 constexpr char PATH_DELIMITER = ';';
@@ -20,6 +21,8 @@ bool is_file_executable(const std::string& path) {
 }
 
 std::string executable_in_path(const std::string& file_name) {
+  if (file_name.empty()) return "";
+
   const char* raw_path = std::getenv("PATH");
   if (!raw_path) return "";
 
@@ -88,10 +91,27 @@ void handle_type(const std::vector<std::string>& args) {
 
 std::vector<std::string> split_args(const std::string& input) {
   std::vector<std::string> args;
-  std::stringstream input_stream(input);
-  for (std::string arg; input_stream >> arg;) {
-    args.push_back(arg);
+  std::string current_arg;
+  bool in_single_quotes = false;
+
+  auto flush = [&] {
+    if (!current_arg.empty()) {
+      args.push_back(current_arg);
+      current_arg.clear();
+    }
+  };
+
+  for (char c : input) {
+    if (c == '\'') {
+      in_single_quotes = !in_single_quotes;
+    } else if (!in_single_quotes && std::isspace(static_cast<unsigned char>(c))) {
+      flush(); // whitespace outside quotes ends the current argument
+    } else {
+      current_arg += c;
+    }
   }
+
+  flush();
   return args;
 }
 
