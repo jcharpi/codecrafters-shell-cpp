@@ -102,7 +102,7 @@ std::vector<std::string> split_args(const std::string& input) {
   };
 
   for (char c : input) {
-    if (c == '\'') {
+    if (c == '\'' || c == '\"') {
       in_single_quotes = !in_single_quotes;
     } else if (!in_single_quotes && std::isspace(static_cast<unsigned char>(c))) {
       flush(); // whitespace outside quotes ends the current argument
