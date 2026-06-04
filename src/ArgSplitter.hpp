@@ -53,7 +53,12 @@ private:
     std::string arg;
     while (!at_end() && !is_space()) {
       char c = peek();
-      if (c == '\'') {
+      if (c == '\\') {
+        advance();
+        if (!at_end()) {
+          arg += advance();
+        }
+      } else if (c == '\'') {
         read_single_quote_section(arg);
       } else if (c == '"') {
         read_double_quote_section(arg);
