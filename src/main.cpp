@@ -109,8 +109,9 @@ void handle_executable(const std::string &file_path,
     return;
   }
 
-  if (pid == 0) { // child process (pid == 0 is the POSIX convention for the
-                  // forked child)
+  // child process (pid == 0 is the POSIX convention for the
+  // forked child)
+  if (pid == 0) {
     execvp(file_path.c_str(), argv.data());
     std::cerr << "handle_executable(): execute failed\n";
     std::exit(EXIT_FAILURE);

@@ -69,7 +69,6 @@ private:
     while (!at_end() && peek() != '\'') {
       arg += advance();
     }
-
     try_consume_char('\'');
   }
 
