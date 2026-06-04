@@ -80,7 +80,11 @@ private:
   void read_double_quote_section(std::string &arg) {
     advance();
     while (!at_end() && peek() != '"') {
-      arg += advance();
+      char c = advance();
+      if (c == '\\') {
+        c = advance();
+      }
+      arg += c;
     }
     try_consume_char('"');
   }
