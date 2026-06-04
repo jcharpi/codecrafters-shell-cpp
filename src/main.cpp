@@ -44,7 +44,7 @@ std::string executable_in_path(const std::string &file_name) {
 void handle_cd(const std::vector<std::string> &args) {
   if (args.size() < 2)
     return;
-  std::string path = args[1];
+  const std::string &path = args[1];
   if (path == "~") {
     const char *home = std::getenv("HOME");
     if (home) {
