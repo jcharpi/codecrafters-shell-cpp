@@ -52,15 +52,15 @@ private:
   std::string read_arg() {
     std::string arg;
     while (!at_end() && !is_space()) {
-      char c = peek();
-      if (c == '\\') {
+      char curr = peek();
+      if (curr == '\\') {
         advance();
         if (!at_end()) {
           arg += advance();
         }
-      } else if (c == '\'') {
+      } else if (curr == '\'') {
         read_single_quote_section(arg);
-      } else if (c == '"') {
+      } else if (curr == '"') {
         read_double_quote_section(arg);
       } else {
         arg += advance();
@@ -78,13 +78,19 @@ private:
   }
 
   void read_double_quote_section(std::string &arg) {
+
+    auto is_escapable = [](char c) {
+      return c == '"' || c == '\\' || c == '$' || c == '`' || c == '\n';
+    };
+    
     advance();
     while (!at_end() && peek() != '"') {
-      char c = advance();
-      if (c == '\\') {
-        c = advance();
+      char curr = advance();
+      if (curr == '\\' && !at_end() && is_escapable(peek())) {
+        arg += advance();
+      } else {
+        arg += curr;
       }
-      arg += c;
     }
     try_consume_char('"');
   }
