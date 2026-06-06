@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ArgSplitter.hpp"
+#include "Command.hpp"
 
 #ifdef _WIN32
 constexpr char PATH_DELIMITER = ';';
@@ -132,12 +133,16 @@ int main() {
     if (!std::getline(std::cin, input))
       break;
 
-    std::vector<std::string> args = split_args(input);
+    Command command = parse_redirection(split_args(input));
+    std::vector<std::string> args = command.args;
     if (args.empty()) {
       continue;
     }
 
     const std::string &cmd = args[0];
+
+    int saved_out = redirect_stream(STDOUT_FILENO, command.stdout_redirect);
+    int saved_err = redirect_stream(STDERR_FILENO, command.stderr_redirect);
 
     if (auto it = builtins.find(cmd); it != builtins.end()) {
       it->second(args);
@@ -147,5 +152,8 @@ int main() {
     } else {
       std::cout << cmd << ": command not found\n";
     }
+
+    restore_stream(STDOUT_FILENO, saved_out);
+    restore_stream(STDERR_FILENO, saved_err);
   }
 }
