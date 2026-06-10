@@ -82,7 +82,7 @@ private:
     auto is_escapable = [](char c) {
       return c == '"' || c == '\\' || c == '$' || c == '`' || c == '\n';
     };
-    
+
     advance();
     while (!at_end() && peek() != '"') {
       char curr = advance();
