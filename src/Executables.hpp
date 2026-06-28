@@ -48,27 +48,24 @@ inline std::string executable_in_path(const std::string &file_name) {
 inline std::vector<std::string> executable_names_in_path() {
   std::unordered_set<std::string> executable_names;
 
-  const char *raw_path =
-      std::getenv("PATH"); // what does get_env return? Pointer to start of path
-                           // directories? Why do we dereference it
+  const char *raw_path = std::getenv("PATH");
   if (!raw_path)
     return {};
 
   std::stringstream path_stream(raw_path);
   std::string directory;
   while (std::getline(path_stream, directory, PATH_DELIMITER)) {
-    std::error_code error_code; // why do we pass this? can't we not pass it?
-    for (const auto &entry : std::filesystem::directory_iterator(
-             directory, error_code)) { // what is this directory_iterator? and
-                                       // what is an entry?
-      if (is_file_executable(entry.path().string())) {
-        executable_names.insert(entry.path().filename().string());
+    std::error_code error_code;
+    for (const auto &directory_entry :
+         std::filesystem::directory_iterator(directory, error_code)) {
+      if (is_file_executable(directory_entry.path().string())) {
+        executable_names.insert(directory_entry.path().filename().string());
       }
     }
   }
-  return std::vector<std::string>(
-      executable_names.begin(),
-      executable_names.end()); // why can't we just return the set/why convert?
+
+  return std::vector<std::string>(executable_names.begin(),
+                                  executable_names.end());
 }
 
 // args must be non-const: data() returns char* only on non-const strings,

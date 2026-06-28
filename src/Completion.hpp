@@ -37,10 +37,10 @@ inline char *complete_executable_generator(const char *text, int state) {
   }
 
   while (cursor < executables.size()) {
-    const std::string &name = executables[cursor];
+    const std::string &executable_name = executables[cursor];
     cursor++;
-    if (name.starts_with(text)) {
-      return strdup(name.c_str());
+    if (executable_name.starts_with(text)) {
+      return strdup(executable_name.c_str());
     }
   }
 
