@@ -49,7 +49,13 @@ inline char *complete_executable_generator(const char *text, int state) {
 
 inline char **try_completion(const char *text, int /*start*/, int /*end*/) {
   rl_attempted_completion_over = 1;
-  return rl_completion_matches(text, complete_builtin_generator);
+  char **builtin_matches =
+      rl_completion_matches(text, complete_builtin_generator);
+  if (builtin_matches) {
+    return builtin_matches;
+  }
+
+  return rl_completion_matches(text, complete_executable_generator);
 }
 
 inline void setup_completion() {
