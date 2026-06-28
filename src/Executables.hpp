@@ -68,6 +68,22 @@ inline std::vector<std::string> executable_names_in_path() {
                                   executable_names.end());
 }
 
+inline std::vector<std::string> file_names_in_cwd() {
+  std::unordered_set<std::string> file_names;
+
+  const std::string current_directory =
+      std::filesystem::current_path().string();
+  std::error_code error_code;
+  for (const auto &directory_entry :
+       std::filesystem::directory_iterator(current_directory, error_code)) {
+    if (directory_entry.is_regular_file()) {
+      file_names.insert(directory_entry.path().filename().string());
+    }
+  }
+
+  return std::vector<std::string>(file_names.begin(), file_names.end());
+}
+
 // args must be non-const: data() returns char* only on non-const strings,
 // required by execvp
 inline void handle_executable(const std::string &file_path,

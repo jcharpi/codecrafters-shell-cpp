@@ -47,6 +47,26 @@ inline char *complete_executable_generator(const char *text, int state) {
   return nullptr;
 }
 
+inline char *complete_file_generator(const char *text, int state) {
+  static std::vector<std::string> files;
+  static size_t cursor;
+  
+  if (state == 0) {
+    files = file_names_in_cwd();
+    cursor = 0;
+  }
+
+  while (cursor < files.size()) {
+    const std::string &file_name = files[cursor];
+    cursor++;
+    if (file_name.starts_with(text)) {
+      return strdup(file_name.c_str());
+    }
+  }
+
+  return nullptr;
+}
+
 inline char **try_completion(const char *text, int /*start*/, int /*end*/) {
   rl_attempted_completion_over = 1;
   char **builtin_matches =
@@ -55,7 +75,12 @@ inline char **try_completion(const char *text, int /*start*/, int /*end*/) {
     return builtin_matches;
   }
 
-  return rl_completion_matches(text, complete_executable_generator);
+  char **executable_matches = rl_completion_matches(text, complete_executable_generator);
+  if (executable_matches) {
+    return executable_matches;
+  }
+
+  return rl_completion_matches(text, complete_file_generator);
 }
 
 inline void setup_completion() {
