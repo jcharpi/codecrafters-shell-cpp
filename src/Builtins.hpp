@@ -38,9 +38,7 @@ inline void handle_echo(const std::vector<std::string> &args) {
   std::cout << "\n";
 }
 
-inline void handle_exit(const std::vector<std::string> &) {
-  std::exit(EXIT_SUCCESS);
-}
+inline void handle_exit(const std::vector<std::string> &) { std::exit(EXIT_SUCCESS); }
 
 inline void handle_pwd(const std::vector<std::string> &) {
   std::cout << std::filesystem::current_path().string() << "\n";
@@ -51,8 +49,7 @@ inline void handle_type(const std::vector<std::string> &args) {
 
   if (std::ranges::contains(builtin_names, target)) {
     std::cout << target << " is a shell builtin\n";
-  } else if (std::string file_path = executable_in_path(target);
-             !file_path.empty()) {
+  } else if (std::string file_path = executable_in_path(target); !file_path.empty()) {
     std::cout << target << " is " << file_path << "\n";
   } else {
     std::cout << target << ": not found\n";
@@ -62,6 +59,5 @@ inline void handle_type(const std::vector<std::string> &args) {
 using BuiltinHandler = std::function<void(const std::vector<std::string> &)>;
 
 inline const std::unordered_map<std::string, BuiltinHandler> builtins{
-        {"cd", handle_cd},   {"echo", handle_echo}, {"exit", handle_exit},
-        {"pwd", handle_pwd}, {"type", handle_type},
-    };
+    {"cd", handle_cd}, {"echo", handle_echo}, {"exit", handle_exit}, {"pwd", handle_pwd}, {"type", handle_type},
+};

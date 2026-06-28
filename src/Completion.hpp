@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Builtins.hpp"
+#include "Executables.hpp"
 
 inline char *complete_builtin_generator(const char *text, int state) {
   static size_t cursor;
@@ -21,6 +22,25 @@ inline char *complete_builtin_generator(const char *text, int state) {
     cursor++;
     if (builtin.starts_with(text)) {
       return strdup(builtin.c_str());
+    }
+  }
+
+  return nullptr;
+}
+
+inline char *complete_executable_generator(const char *text, int state) {
+  static std::vector<std::string> executables;
+  static size_t cursor;
+  if (state == 0) {
+    executables = executable_names_in_path();
+    cursor = 0;
+  }
+
+  while (cursor < executables.size()) {
+    const std::string &name = executables[cursor];
+    cursor++;
+    if (name.starts_with(text)) {
+      return strdup(name.c_str());
     }
   }
 

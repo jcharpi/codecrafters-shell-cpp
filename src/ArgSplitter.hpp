@@ -29,9 +29,7 @@ private:
 
   char peek() const { return at_end() ? '\0' : source_[position_]; }
 
-  bool is_space() const {
-    return std::isspace(static_cast<unsigned char>(peek()));
-  }
+  bool is_space() const { return std::isspace(static_cast<unsigned char>(peek())); }
 
   char advance() { return source_[position_++]; }
 
@@ -79,9 +77,7 @@ private:
 
   void read_double_quote_section(std::string &arg) {
 
-    auto is_escapable = [](char c) {
-      return c == '"' || c == '\\' || c == '$' || c == '`' || c == '\n';
-    };
+    auto is_escapable = [](char c) { return c == '"' || c == '\\' || c == '$' || c == '`' || c == '\n'; };
 
     advance();
     while (!at_end() && peek() != '"') {
@@ -99,6 +95,4 @@ private:
   size_t position_ = 0;
 };
 
-inline std::vector<std::string> split_args(std::string_view input) {
-  return ArgSplitter(input).split();
-}
+inline std::vector<std::string> split_args(std::string_view input) { return ArgSplitter(input).split(); }
