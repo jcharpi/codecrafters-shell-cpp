@@ -23,38 +23,42 @@ inline bool is_file_executable(const std::string &path) {
   return access(path.c_str(), X_OK) == 0;
 }
 
+inline std::vector<std::string> directories_in_path() {
+  const char *raw_path = std::getenv("PATH");
+  if (!raw_path)
+    return {};
+
+  std::vector<std::string> directories;
+  std::stringstream path_stream(raw_path);
+  std::string directory;
+  while (std::getline(path_stream, directory, PATH_DELIMITER)) {
+    directories.push_back(directory);
+  }
+
+  return directories;
+}
+
 // Returns the full path to `file_name` if it's an executable somewhere on PATH,
 // or "" if not found.
 inline std::string executable_in_path(const std::string &file_name) {
   if (file_name.empty())
     return "";
 
-  const char *raw_path = std::getenv("PATH");
-  if (!raw_path)
-    return "";
-
-  std::stringstream path_stream(raw_path);
-  std::string directory;
-  while (std::getline(path_stream, directory, PATH_DELIMITER)) {
+  for (const std::string &directory : directories_in_path()) {
     std::string full_path =
         (std::filesystem::path(directory) / file_name).string();
     if (is_file_executable(full_path)) {
       return full_path;
     }
   }
+
   return "";
 }
 
 inline std::vector<std::string> executable_names_in_path() {
   std::unordered_set<std::string> executable_names;
 
-  const char *raw_path = std::getenv("PATH");
-  if (!raw_path)
-    return {};
-
-  std::stringstream path_stream(raw_path);
-  std::string directory;
-  while (std::getline(path_stream, directory, PATH_DELIMITER)) {
+  for (const std::string &directory : directories_in_path()) {
     std::error_code error_code;
     for (const auto &directory_entry :
          std::filesystem::directory_iterator(directory, error_code)) {
