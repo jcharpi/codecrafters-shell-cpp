@@ -48,7 +48,7 @@ inline char *complete_file_generator(const char *text, int state) {
   static size_t cursor;
 
   if (state == 0) {
-    files = file_names_in_cwd();
+    files = file_names_in_directory(text);
   }
 
   return next_matching_candidate(text, state, files, cursor);
