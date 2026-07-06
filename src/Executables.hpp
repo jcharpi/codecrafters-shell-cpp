@@ -72,10 +72,9 @@ inline std::vector<std::string> executable_names_in_path() {
                                   executable_names.end());
 }
 
-// rename text to something more discriptive
 inline std::vector<std::string> file_names_in_directory(const std::string &partial_path) {
-  std::filesystem::path path(partial_path); // what does path constructor do?
-  std::filesystem::path directory = path.parent_path(); // what is a parent path?
+  std::filesystem::path path(partial_path);
+  std::filesystem::path directory = path.parent_path();
   std::unordered_set<std::string> file_names;
 
   std::error_code error_code;
