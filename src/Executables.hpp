@@ -75,12 +75,12 @@ inline std::vector<std::string> executable_names_in_path() {
 // rename text to something more discriptive
 inline std::vector<std::string> file_names_in_directory(const std::string &partial_path) {
   std::filesystem::path path(partial_path); // what does path constructor do?
-  std::filesystem::path directory = path.has_parent_path() ? path.parent_path() : std::filesystem::path(".");
+  std::filesystem::path directory = path.parent_path(); // what is a parent path?
   std::unordered_set<std::string> file_names;
 
   std::error_code error_code;
   for (const auto &directory_entry :
-       std::filesystem::directory_iterator(directory, error_code)) {
+       std::filesystem::directory_iterator(directory.empty() ? "." : directory, error_code)) {
     if (directory_entry.is_regular_file()) {
       file_names.insert((directory / directory_entry.path().filename()).string());
     }
