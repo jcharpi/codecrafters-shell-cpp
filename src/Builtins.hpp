@@ -12,7 +12,7 @@
 #include "Executables.hpp"
 
 inline const std::vector<std::string> builtin_names{
-    "cd", "echo", "exit", "pwd", "type",
+    "cd", "echo", "exit", "pwd", "type", "complete"
 };
 
 inline void handle_cd(const std::vector<std::string> &args) {
@@ -59,9 +59,11 @@ inline void handle_type(const std::vector<std::string> &args) {
   }
 }
 
+inline void handle_complete(const std::vector<std::string> &args) {}
+
 using BuiltinHandler = std::function<void(const std::vector<std::string> &)>;
 
 inline const std::unordered_map<std::string, BuiltinHandler> builtins{
     {"cd", handle_cd},   {"echo", handle_echo}, {"exit", handle_exit},
-    {"pwd", handle_pwd}, {"type", handle_type},
+    {"pwd", handle_pwd}, {"type", handle_type}, {"complete", handle_complete}
 };
