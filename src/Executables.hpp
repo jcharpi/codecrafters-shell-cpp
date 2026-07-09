@@ -72,20 +72,27 @@ inline std::vector<std::string> executable_names_in_path() {
                                   executable_names.end());
 }
 
-inline std::vector<std::string> file_names_in_directory(const std::string &partial_path) {
+inline std::vector<std::string>
+entries_in_directory(const std::string &partial_path) {
   std::filesystem::path path(partial_path);
   std::filesystem::path directory = path.parent_path();
-  std::unordered_set<std::string> file_names;
+  std::unordered_set<std::string> entries;
 
   std::error_code error_code;
-  for (const auto &directory_entry :
-       std::filesystem::directory_iterator(directory.empty() ? "." : directory, error_code)) {
-    if (directory_entry.is_regular_file()) {
-      file_names.insert((directory / directory_entry.path().filename()).string());
+  for (const auto &directory_entry : std::filesystem::directory_iterator(
+           directory.empty() ? "." : directory, error_code)) {
+    if (!directory_entry.is_regular_file() && !directory_entry.is_directory()) {
+      continue;
     }
+
+    std::string entry =
+        (directory / directory_entry.path().filename()).string();
+    if (directory_entry.is_directory())
+      entry += '/'; // shell uses this regardless of platform
+    entries.insert(entry);
   }
 
-  return std::vector<std::string>(file_names.begin(), file_names.end());
+  return std::vector<std::string>(entries.begin(), entries.end());
 }
 
 // args must be non-const: data() returns char* only on non-const strings,
