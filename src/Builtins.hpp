@@ -59,7 +59,12 @@ inline void handle_type(const std::vector<std::string> &args) {
   }
 }
 
-inline void handle_complete(const std::vector<std::string> &args) {}
+// we should have flashcard about completion specification and what it is
+inline void handle_complete(const std::vector<std::string> &args) {
+  if (args.size() >= 3 && args[1] == "-p") {
+    std::cerr << "complete: " << args[2] << ": no completion specification\n";
+  }
+}
 
 using BuiltinHandler = std::function<void(const std::vector<std::string> &)>;
 
