@@ -4,12 +4,14 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <readline/readline.h>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "ArgSplitter.hpp"
 #include "Builtins.hpp"
+#include "CompleterScript.hpp"
+#include "CompletionRegistry.hpp"
 #include "Executables.hpp"
 
 inline char *next_matching_candidate(const char *text, int state,
@@ -57,6 +59,15 @@ inline char *complete_entry_generator(const char *text, int state) {
   return next_matching_candidate(text, state, files, cursor);
 }
 
+// Filled by try_completion before it hands the generator to readline, since
+// readline generators take no user data of their own.
+inline std::vector<std::string> completer_candidates;
+
+inline char *complete_registered_generator(const char *text, int state) {
+  static size_t cursor;
+  return next_matching_candidate(text, state, completer_candidates, cursor);
+}
+
 inline char **try_completion(const char *text, int start, int /*end*/) {
   rl_attempted_completion_over = 1;
 
@@ -68,6 +79,16 @@ inline char **try_completion(const char *text, int start, int /*end*/) {
     }
 
     return rl_completion_matches(text, complete_executable_generator);
+  }
+
+  std::vector<std::string> line_words =
+      split_args(std::string(rl_line_buffer).substr(0, start));
+  if (!line_words.empty()) {
+    if (const std::string *script =
+            registered_completer_for(line_words.front())) {
+      completer_candidates = run_completer_script(*script);
+      return rl_completion_matches(text, complete_registered_generator);
+    }
   }
 
   char **entry_matches = rl_completion_matches(text, complete_entry_generator);

@@ -59,7 +59,6 @@ inline void handle_type(const std::vector<std::string> &args) {
   }
 }
 
-// we should have flashcard about completion specification and what it is
 inline void handle_complete(const std::vector<std::string> &args) {
   if (args.size() >= 4 && args[1] == "-C") {
     registered_completer_scripts[args[3]] = args[2];
@@ -69,7 +68,7 @@ inline void handle_complete(const std::vector<std::string> &args) {
   if (args.size() >= 3 && args[1] == "-p") {
     const std::string &command = args[2];
     if (const std::string *path = registered_completer_for(command)) {
-      std::cout << "complete -C '" << path << "' " << command << "\n";
+      std::cout << "complete -C '" << *path << "' " << command << "\n";
     } else {
       std::cerr << "complete: " << command << ": no completion specification\n";
     }
