@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <functional>
 #include <iostream>
+#include <print>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -27,30 +28,30 @@ inline void handle_cd(const vector<string>& args) {
   } else if (filesystem::is_directory(path)) {
     filesystem::current_path(path);
   } else {
-    cerr << "cd: " << path << ": No such file or directory\n";
+    println(cerr, "cd: {}: No such file or directory", path);
   }
 }
 
 inline void handle_echo(const vector<string>& args) {
   for (ptrdiff_t i = 1; i < ssize(args); i++) {
-    cout << (i > 1 ? " " : "") << args[i];
+    print(cout, "{}{}", i > 1 ? " " : "", args[i]);
   }
-  cout << "\n";
+  println(cout);
 }
 
 inline void handle_exit(const vector<string>&) { exit(EXIT_SUCCESS); }
 
-inline void handle_pwd(const vector<string>&) { cout << filesystem::current_path().string() << "\n"; }
+inline void handle_pwd(const vector<string>&) { println(cout, "{}", filesystem::current_path().string()); }
 
 inline void handle_type(const vector<string>& args) {
   const string& target = ssize(args) > 1 ? args[1] : "";
 
   if (ranges::contains(builtin_names, target)) {
-    cout << target << " is a shell builtin\n";
+    println(cout, "{} is a shell builtin", target);
   } else if (string file_path = executable_in_path(target); !file_path.empty()) {
-    cout << target << " is " << file_path << "\n";
+    println(cout, "{} is {}", target, file_path);
   } else {
-    cout << target << ": not found\n";
+    println(cout, "{}: not found", target);
   }
 }
 
@@ -63,9 +64,9 @@ inline void handle_complete(const vector<string>& args) {
   if (ssize(args) >= 3 && args[1] == "-p") {
     const string& command = args[2];
     if (const string* path = registered_completer_for(command)) {
-      cout << "complete -C '" << *path << "' " << command << "\n";
+      println(cout, "complete -C '{}' {}", *path, command);
     } else {
-      cerr << "complete: " << command << ": no completion specification\n";
+      println(cerr, "complete: {}: no completion specification", command);
     }
   }
 }

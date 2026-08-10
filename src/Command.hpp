@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <optional>
+#include <print>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <string>
@@ -66,7 +67,7 @@ inline int redirect_stream(int curr_stream_fd, const optional<Redirect>& redirec
 
   int redirect_fd = open_redirect_file(*redirect);
   if (redirect_fd == -1) {
-    cerr << "redirect_stream(): " << redirect->file << "\n";
+    println(cerr, "redirect_stream(): {}", redirect->file);
     return -1;
   }
 

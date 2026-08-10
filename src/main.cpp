@@ -1,4 +1,5 @@
 #include <iostream>
+#include <print>
 #include <string>
 #include <unistd.h> // STDOUT_FILENO, STDERR_FILENO
 #include <utility>  // move
@@ -42,7 +43,7 @@ int main() {
     } else if (string file_path = executable_in_path(command_name); !file_path.empty()) {
       handle_executable(file_path, args);
     } else {
-      cout << command_name << ": command not found\n";
+      println(cout, "{}: command not found", command_name);
     }
 
     restore_stream(STDOUT_FILENO, saved_out);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdio>
+#include <format>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -27,8 +28,11 @@ inline string quoted(const string& word) {
 }
 
 inline vector<string> run_completer_script(const string& script_path, const string& command, const string& curr_word,
-                                           const string& prev_word) {
-  string command_line = quoted(script_path) + " " + quoted(command) + " " + quoted(curr_word) + " " + quoted(prev_word);
+                                           const string& prev_word, const string& COMP_LINE, size_t COMP_POINT) {
+  string command_line = format("COMP_LINE={} COMP_POINT={} {} {} {} {}", 
+    quoted(COMP_LINE), COMP_POINT,
+    quoted(script_path), quoted(command),
+    quoted(curr_word), quoted(prev_word));
   FILE* script_stream = popen(command_line.c_str(), "r");
   if (!script_stream) {
     return {};
