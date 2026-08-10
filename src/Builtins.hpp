@@ -55,13 +55,29 @@ inline void handle_type(const vector<string>& args) {
   }
 }
 
+// args[0] is "complete"; args[1] is the option. The operands after it depend on
+// the option:
+//   -C <script> <command>   register <script> as the completer for <command>
+//   -r <command>            remove <command>'s completer
+//   -p <command>            print <command>'s completer as a `complete -C` line
 inline void handle_complete(const vector<string>& args) {
-  if (ssize(args) >= 4 && args[1] == "-C") {
-    registered_completer_scripts[args[3]] = args[2];
+  if (ssize(args) < 2) return;
+  const string& option = args[1];
+
+  if (option == "-C" && ssize(args) >= 4) {
+    const string& script = args[2];
+    const string& command = args[3];
+    registered_completer_scripts[command] = script;
     return;
   }
 
-  if (ssize(args) >= 3 && args[1] == "-p") {
+  if (option == "-r" && ssize(args) >= 3) {
+    const string& command = args[2];
+    registered_completer_scripts.erase(command);
+    return;
+  }
+
+  if (option == "-p" && ssize(args) >= 3) {
     const string& command = args[2];
     if (const string* path = registered_completer_for(command)) {
       println(cout, "complete -C '{}' {}", *path, command);
