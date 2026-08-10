@@ -84,7 +84,7 @@ inline char** try_completion(const char* text, int start, int /*end*/) {
   if (!line_words.empty()) {
     if (const string* script = registered_completer_for(line_words.front())) {
       const string previous_word = ssize(line_words) > 1 ? line_words.back() : "";
-      completer_candidates = run_completer_script(*script, line_words.front(), previous_word, text);
+      completer_candidates = run_completer_script(*script, line_words.front(), text, line_words.back());
       return rl_completion_matches(text, complete_registered_generator);
     }
   }
