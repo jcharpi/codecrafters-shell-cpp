@@ -16,8 +16,7 @@ public:
     vector<string> args;
     while (!at_end()) {
       skip_whitespace();
-      if (at_end())
-        break;
+      if (at_end()) break;
       string arg = read_arg();
       if (!arg.empty()) {
         args.push_back(std::move(arg));
@@ -31,9 +30,7 @@ private:
 
   char peek() const { return at_end() ? '\0' : source_[position_]; }
 
-  bool is_space() const {
-    return isspace(static_cast<unsigned char>(peek()));
-  }
+  bool is_space() const { return isspace(static_cast<unsigned char>(peek())); }
 
   char advance() { return source_[position_++]; }
 
@@ -71,7 +68,7 @@ private:
     return arg;
   }
 
-  void read_single_quote_section(string &arg) {
+  void read_single_quote_section(string& arg) {
     advance();
     while (!at_end() && peek() != '\'') {
       arg += advance();
@@ -79,11 +76,9 @@ private:
     try_consume_char('\'');
   }
 
-  void read_double_quote_section(string &arg) {
+  void read_double_quote_section(string& arg) {
 
-    auto is_escapable = [](char c) {
-      return c == '"' || c == '\\' || c == '$' || c == '`' || c == '\n';
-    };
+    auto is_escapable = [](char c) { return c == '"' || c == '\\' || c == '$' || c == '`' || c == '\n'; };
 
     advance();
     while (!at_end() && peek() != '"') {
@@ -101,6 +96,4 @@ private:
   ptrdiff_t position_ = 0;
 };
 
-inline vector<string> split_args(string_view input) {
-  return ArgSplitter(input).split();
-}
+inline vector<string> split_args(string_view input) { return ArgSplitter(input).split(); }

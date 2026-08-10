@@ -29,9 +29,9 @@ struct Command {
 inline Command parse_redirection(vector<string> args) {
   Command cmd;
   for (ptrdiff_t i = 0; i < ssize(args); i++) {
-    const string &arg = args[i];
+    const string& arg = args[i];
 
-    optional<Redirect> *target = nullptr;
+    optional<Redirect>* target = nullptr;
     bool append = false;
     if (arg == ">" || arg == "1>") {
       target = &cmd.stdout_redirect;
@@ -54,14 +54,12 @@ inline Command parse_redirection(vector<string> args) {
   return cmd;
 }
 
-inline int open_redirect_file(const Redirect &redirect) {
-  int open_permissions =
-      O_WRONLY | O_CREAT | (redirect.append ? O_APPEND : O_TRUNC);
+inline int open_redirect_file(const Redirect& redirect) {
+  int open_permissions = O_WRONLY | O_CREAT | (redirect.append ? O_APPEND : O_TRUNC);
   return open(redirect.file.c_str(), open_permissions, NEW_FILE_PERMISSIONS);
 }
 
-inline int redirect_stream(int curr_stream_fd,
-                           const optional<Redirect> &redirect) {
+inline int redirect_stream(int curr_stream_fd, const optional<Redirect>& redirect) {
   if (!redirect) {
     return -1;
   }

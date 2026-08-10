@@ -19,7 +19,7 @@ int main() {
 
   string input;
   while (true) {
-    char *line = readline("$ ");
+    char* line = readline("$ ");
     if (!line) {
       break;
     }
@@ -32,15 +32,14 @@ int main() {
       continue;
     }
 
-    const string &command_name = args[0];
+    const string& command_name = args[0];
 
     int saved_out = redirect_stream(STDOUT_FILENO, command.stdout_redirect);
     int saved_err = redirect_stream(STDERR_FILENO, command.stderr_redirect);
 
     if (auto builtin = builtins.find(command_name); builtin != builtins.end()) {
       builtin->second(args);
-    } else if (string file_path = executable_in_path(command_name);
-               !file_path.empty()) {
+    } else if (string file_path = executable_in_path(command_name); !file_path.empty()) {
       handle_executable(file_path, args);
     } else {
       cout << command_name << ": command not found\n";

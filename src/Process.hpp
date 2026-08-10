@@ -14,10 +14,10 @@ using namespace std;
 
 // args must be non-const: data() returns char* only on non-const strings,
 // required by execvp
-inline void handle_executable(const string &file_path, vector<string> &args) {
-  vector<char *> argv;
+inline void handle_executable(const string& file_path, vector<string>& args) {
+  vector<char*> argv;
   argv.reserve(ssize(args) + 1); // +1 for the null terminator execvp requires
-  for (string &arg : args) {
+  for (string& arg : args) {
     argv.push_back(arg.data());
   }
   argv.push_back(nullptr);

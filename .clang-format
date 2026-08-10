@@ -1,2 +1,7 @@
 ColumnLimit: 120
-AllowShortIfStatementsOnALine: WithoutElse
+AllowShortIfStatementsOnASingleLine: WithoutElse
+# `type* name` / `type& name` rather than `type *name`.
+# DerivePointerAlignment must stay false or clang-format infers the style
+# per-file from whatever is already there and ignores the setting above.
+PointerAlignment: Left
+DerivePointerAlignment: false
