@@ -5,11 +5,13 @@
 #include <string>
 #include <vector>
 
-inline std::vector<std::string> non_empty_lines(const std::string &text) {
-  std::vector<std::string> lines;
-  std::istringstream text_stream(text);
-  std::string line;
-  while (std::getline(text_stream, line)) {
+using namespace std;
+
+inline vector<string> non_empty_lines(const string &text) {
+  vector<string> lines;
+  istringstream text_stream(text);
+  string line;
+  while (getline(text_stream, line)) {
     if (!line.empty()) {
       lines.push_back(line);
     }
@@ -17,15 +19,14 @@ inline std::vector<std::string> non_empty_lines(const std::string &text) {
   return lines;
 }
 
-inline std::vector<std::string>
-run_completer_script(const std::string &script_path) {
-  // popen starts the script now and gives us a stream to its stdout.
+// Runs a `complete -C` script and returns the candidates it prints.
+inline vector<string> run_completer_script(const string &script_path) {
   FILE *script_stream = popen(script_path.c_str(), "r");
   if (!script_stream) {
     return {};
   }
 
-  std::string output;
+  string output;
   for (int character = fgetc(script_stream); character != EOF;
        character = fgetc(script_stream)) {
     output += static_cast<char>(character);

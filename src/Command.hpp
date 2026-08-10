@@ -11,25 +11,27 @@
 #include <unistd.h>
 #include <vector>
 
+using namespace std;
+
 constexpr int NEW_FILE_PERMISSIONS = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 
 struct Redirect {
-  std::string file;
+  string file;
   bool append = false;
 };
 
 struct Command {
-  std::vector<std::string> args;
-  std::optional<Redirect> stdout_redirect;
-  std::optional<Redirect> stderr_redirect;
+  vector<string> args;
+  optional<Redirect> stdout_redirect;
+  optional<Redirect> stderr_redirect;
 };
 
-inline Command parse_redirection(std::vector<std::string> args) {
+inline Command parse_redirection(vector<string> args) {
   Command cmd;
-  for (size_t i = 0; i < args.size(); i++) {
-    const std::string &arg = args[i];
+  for (ptrdiff_t i = 0; i < ssize(args); i++) {
+    const string &arg = args[i];
 
-    std::optional<Redirect> *target = nullptr;
+    optional<Redirect> *target = nullptr;
     bool append = false;
     if (arg == ">" || arg == "1>") {
       target = &cmd.stdout_redirect;
@@ -43,7 +45,7 @@ inline Command parse_redirection(std::vector<std::string> args) {
       append = true;
     }
 
-    if (target && i + 1 < args.size()) {
+    if (target && i + 1 < ssize(args)) {
       *target = Redirect{std::move(args[++i]), append};
     } else {
       cmd.args.push_back(std::move(args[i]));
@@ -59,14 +61,14 @@ inline int open_redirect_file(const Redirect &redirect) {
 }
 
 inline int redirect_stream(int curr_stream_fd,
-                           const std::optional<Redirect> &redirect) {
+                           const optional<Redirect> &redirect) {
   if (!redirect) {
     return -1;
   }
 
   int redirect_fd = open_redirect_file(*redirect);
   if (redirect_fd == -1) {
-    std::cerr << "redirect_stream(): " << redirect->file << "\n";
+    cerr << "redirect_stream(): " << redirect->file << "\n";
     return -1;
   }
 

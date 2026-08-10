@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h> // STDOUT_FILENO, STDERR_FILENO
-#include <utility>  // std::move
+#include <utility>  // move
 #include <vector>
 
 #include "ArgSplitter.hpp"
@@ -9,14 +9,15 @@
 #include "Command.hpp"
 #include "Completion.hpp"
 #include "Executables.hpp"
+#include "Process.hpp"
 
 int main() {
-  std::cout << std::unitbuf;
-  std::cerr << std::unitbuf;
+  cout << unitbuf;
+  cerr << unitbuf;
 
   setup_completion();
 
-  std::string input;
+  string input;
   while (true) {
     char *line = readline("$ ");
     if (!line) {
@@ -26,23 +27,23 @@ int main() {
     free(line);
 
     Command command = parse_redirection(split_args(input));
-    std::vector<std::string> args = std::move(command.args);
+    vector<string> args = std::move(command.args);
     if (args.empty()) {
       continue;
     }
 
-    const std::string &cmd = args[0];
+    const string &command_name = args[0];
 
     int saved_out = redirect_stream(STDOUT_FILENO, command.stdout_redirect);
     int saved_err = redirect_stream(STDERR_FILENO, command.stderr_redirect);
 
-    if (auto it = builtins.find(cmd); it != builtins.end()) {
-      it->second(args);
-    } else if (std::string file_path = executable_in_path(cmd);
+    if (auto builtin = builtins.find(command_name); builtin != builtins.end()) {
+      builtin->second(args);
+    } else if (string file_path = executable_in_path(command_name);
                !file_path.empty()) {
       handle_executable(file_path, args);
     } else {
-      std::cout << cmd << ": command not found\n";
+      cout << command_name << ": command not found\n";
     }
 
     restore_stream(STDOUT_FILENO, saved_out);

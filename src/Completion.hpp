@@ -14,15 +14,17 @@
 #include "CompletionRegistry.hpp"
 #include "Executables.hpp"
 
+using namespace std;
+
 inline char *next_matching_candidate(const char *text, int state,
-                                     const std::vector<std::string> &candidates,
-                                     size_t &cursor) {
+                                     const vector<string> &candidates,
+                                     ptrdiff_t &cursor) {
   if (state == 0) {
     cursor = 0;
   }
 
-  while (cursor < candidates.size()) {
-    const std::string &candidate = candidates[cursor];
+  while (cursor < ssize(candidates)) {
+    const string &candidate = candidates[cursor];
     cursor++;
     if (candidate.starts_with(text)) {
       return strdup(candidate.c_str());
@@ -33,13 +35,13 @@ inline char *next_matching_candidate(const char *text, int state,
 }
 
 inline char *complete_builtin_generator(const char *text, int state) {
-  static size_t cursor;
+  static ptrdiff_t cursor;
   return next_matching_candidate(text, state, builtin_names, cursor);
 }
 
 inline char *complete_executable_generator(const char *text, int state) {
-  static std::vector<std::string> executables;
-  static size_t cursor;
+  static vector<string> executables;
+  static ptrdiff_t cursor;
 
   if (state == 0) {
     executables = executable_names_in_path();
@@ -49,8 +51,8 @@ inline char *complete_executable_generator(const char *text, int state) {
 }
 
 inline char *complete_entry_generator(const char *text, int state) {
-  static std::vector<std::string> files;
-  static size_t cursor;
+  static vector<string> files;
+  static ptrdiff_t cursor;
 
   if (state == 0) {
     files = entries_in_directory(text);
@@ -61,10 +63,10 @@ inline char *complete_entry_generator(const char *text, int state) {
 
 // Filled by try_completion before it hands the generator to readline, since
 // readline generators take no user data of their own.
-inline std::vector<std::string> completer_candidates;
+inline vector<string> completer_candidates;
 
 inline char *complete_registered_generator(const char *text, int state) {
-  static size_t cursor;
+  static ptrdiff_t cursor;
   return next_matching_candidate(text, state, completer_candidates, cursor);
 }
 
@@ -81,10 +83,10 @@ inline char **try_completion(const char *text, int start, int /*end*/) {
     return rl_completion_matches(text, complete_executable_generator);
   }
 
-  std::vector<std::string> line_words =
-      split_args(std::string(rl_line_buffer).substr(0, start));
+  vector<string> line_words =
+      split_args(string(rl_line_buffer).substr(0, start));
   if (!line_words.empty()) {
-    if (const std::string *script =
+    if (const string *script =
             registered_completer_for(line_words.front())) {
       completer_candidates = run_completer_script(*script);
       return rl_completion_matches(text, complete_registered_generator);
@@ -95,7 +97,7 @@ inline char **try_completion(const char *text, int start, int /*end*/) {
   // If exactly one match and that match is a directory, don't append space to
   // the end of completion
   if (entry_matches && !entry_matches[1] &&
-      std::string_view(entry_matches[0]).ends_with('/')) {
+      string_view(entry_matches[0]).ends_with('/')) {
     rl_completion_append_character = '\0';
   }
   return entry_matches;
