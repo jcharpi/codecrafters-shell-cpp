@@ -15,7 +15,9 @@
 
 using namespace std;
 
-inline const vector<string> builtin_names{"cd", "echo", "exit", "pwd", "type", "complete"};
+// Kept alphabetical, as are the handlers below and the `builtins` map at the
+// bottom. Nothing enforces the three agree, so a new builtin means three edits.
+inline const vector<string> builtin_names{"cd", "complete", "echo", "exit", "jobs", "pwd", "type"};
 
 inline void handle_cd(const vector<string>& args) {
   if (ssize(args) < 2) return;
@@ -29,29 +31,6 @@ inline void handle_cd(const vector<string>& args) {
     filesystem::current_path(path);
   } else {
     println(cerr, "cd: {}: No such file or directory", path);
-  }
-}
-
-inline void handle_echo(const vector<string>& args) {
-  for (ptrdiff_t i = 1; i < ssize(args); i++) {
-    print(cout, "{}{}", i > 1 ? " " : "", args[i]);
-  }
-  println(cout);
-}
-
-inline void handle_exit(const vector<string>&) { exit(EXIT_SUCCESS); }
-
-inline void handle_pwd(const vector<string>&) { println(cout, "{}", filesystem::current_path().string()); }
-
-inline void handle_type(const vector<string>& args) {
-  const string& target = ssize(args) > 1 ? args[1] : "";
-
-  if (ranges::contains(builtin_names, target)) {
-    println(cout, "{} is a shell builtin", target);
-  } else if (string file_path = executable_in_path(target); !file_path.empty()) {
-    println(cout, "{} is {}", target, file_path);
-  } else {
-    println(cout, "{}: not found", target);
   }
 }
 
@@ -87,8 +66,33 @@ inline void handle_complete(const vector<string>& args) {
   }
 }
 
+inline void handle_echo(const vector<string>& args) {
+  for (ptrdiff_t i = 1; i < ssize(args); i++) {
+    print(cout, "{}{}", i > 1 ? " " : "", args[i]);
+  }
+  println(cout);
+}
+
+inline void handle_exit(const vector<string>&) { exit(EXIT_SUCCESS); }
+
+inline void handle_jobs(const vector<string>&) {}
+
+inline void handle_pwd(const vector<string>&) { println(cout, "{}", filesystem::current_path().string()); }
+
+inline void handle_type(const vector<string>& args) {
+  const string& target = ssize(args) > 1 ? args[1] : "";
+
+  if (ranges::contains(builtin_names, target)) {
+    println(cout, "{} is a shell builtin", target);
+  } else if (string file_path = executable_in_path(target); !file_path.empty()) {
+    println(cout, "{} is {}", target, file_path);
+  } else {
+    println(cout, "{}: not found", target);
+  }
+}
+
 using BuiltinHandler = function<void(const vector<string>&)>;
 
-inline const unordered_map<string, BuiltinHandler> builtins{{"cd", handle_cd},     {"echo", handle_echo},
-                                                            {"exit", handle_exit}, {"pwd", handle_pwd},
-                                                            {"type", handle_type}, {"complete", handle_complete}};
+inline const unordered_map<string, BuiltinHandler> builtins{
+    {"cd", handle_cd},     {"complete", handle_complete}, {"echo", handle_echo}, {"exit", handle_exit},
+    {"jobs", handle_jobs}, {"pwd", handle_pwd},           {"type", handle_type}};
