@@ -10,12 +10,7 @@
 
 using namespace std;
 
-// Starting child processes and waiting on them. Knows nothing about PATH
-// lookup (Executables.hpp) or about what the child is for.
-
-// args must be non-const: data() returns char* only on non-const strings,
-// required by execvp
-inline void handle_executable(const string& file_path, vector<string>& args) {
+inline pid_t spawn_executable(const string& file_path, vector<string>& args) {
   vector<char*> argv;
   argv.reserve(ssize(args) + 1); // +1 for the null terminator execvp requires
   for (string& arg : args) {
@@ -25,18 +20,23 @@ inline void handle_executable(const string& file_path, vector<string>& args) {
 
   pid_t pid = fork();
   if (pid == -1) {
-    println(cerr, "handle_executable(): fork failed");
-    return;
+    println(cerr, "spawn_executable(): fork failed");
+    return pid;
   }
 
-  // pid == 0 is the POSIX convention for the forked child
   if (pid == 0) {
     execvp(file_path.c_str(), argv.data());
-    println(cerr, "handle_executable(): execute failed");
+    println(cerr, "spawn_executable(): execute failed");
     exit(EXIT_FAILURE);
-  } else {
-    if (waitpid(pid, nullptr, 0) == -1) {
-      println(cerr, "handle_executable(): wait failed");
-    }
+  }
+
+  return pid;
+}
+
+inline void handle_executable(const string& file_path, vector<string>& args) {
+  pid_t pid = spawn_executable(file_path, args);
+  if (pid == -1) return;
+  if (waitpid(pid, nullptr, 0) == -1) {
+    println(cerr, "handle_executable(): wait failed");
   }
 }
