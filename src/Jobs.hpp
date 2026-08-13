@@ -23,8 +23,8 @@ struct Job {
   optional<int> exit_status;
 };
 
-template <> // what's this?
-struct formatter<JobStatus> : formatter<string_view> {
+template <>
+struct std::formatter<JobStatus> : std::formatter<string_view> {
   auto format(JobStatus status, auto& context) const {
     return std::formatter<string_view>::format(status == JobStatus::Running ? "Running" : "Done", context);
   }
