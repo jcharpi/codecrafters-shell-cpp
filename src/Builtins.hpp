@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdlib> // getenv, exit
 #include <filesystem>
 #include <functional>
@@ -12,6 +13,7 @@
 
 #include "CompletionRegistry.hpp"
 #include "Executables.hpp"
+#include "Jobs.hpp"
 
 using namespace std;
 
@@ -75,7 +77,17 @@ inline void handle_echo(const vector<string>& args) {
 
 inline void handle_exit(const vector<string>&) { exit(EXIT_SUCCESS); }
 
-inline void handle_jobs(const vector<string>&) {}
+// Lists the background jobs in job-number order. The status sits
+// in a 24-character field whose padding is what separates it from the command:
+//   [1]-  Running                 sleep 10
+//   [2]+  Running                 sleep 20
+inline void handle_jobs(const vector<string>&) {
+  for (ptrdiff_t index : background_job_display_order()) {
+    const Job& background_job = background_jobs[index];
+    println(cout, "[{}]{}  {:<24}{}", background_job.job_number, get_indicator(index), background_job.status,
+            background_job.command_line);
+  }
+}
 
 inline void handle_pwd(const vector<string>&) { println(cout, "{}", filesystem::current_path().string()); }
 
