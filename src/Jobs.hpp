@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <format>
+#include <iostream>
 #include <numeric>
 #include <optional>
+#include <print>
 #include <string>
 #include <string_view>
 #include <sys/types.h>
@@ -45,6 +47,12 @@ inline char job_marker(ptrdiff_t index) {
   return ' ';
 }
 
+inline void print_job_line(ptrdiff_t index) {
+  const Job& background_job = background_jobs[index];
+  println(cout, "[{}]{}  {:<24}{}", background_job.job_number, job_marker(index), background_job.status,
+          background_job.command_line);
+}
+
 // Positions into background_jobs, ordered by job number which is the order `jobs`
 // prints. We sort a list of positions rather than the jobs themselves because each
 // position also represents how recently the job started, which is needed for
@@ -66,12 +74,9 @@ inline void reap_background_jobs() {
     if (result == background_job.pid && WIFEXITED(wait_status)) {
       background_job.exit_status = WEXITSTATUS(wait_status);
     }
-
   }
 }
 
 inline void purge_done_jobs() {
-  erase_if(background_jobs, [](const Job& background_job) {
-    return background_job.status == JobStatus::Done;
-  });
+  erase_if(background_jobs, [](const Job& background_job) { return background_job.status == JobStatus::Done; });
 }

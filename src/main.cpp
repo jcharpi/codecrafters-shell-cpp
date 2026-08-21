@@ -25,6 +25,10 @@ int main() {
 
   string input;
   while (true) {
+    for (ptrdiff_t index : background_job_display_order()) {
+      if (background_jobs[index].status == JobStatus::Done) print_job_line(index);
+    }
+    
     char* line = readline("$ ");
     if (!line) {
       break;
