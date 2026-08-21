@@ -25,10 +25,12 @@ int main() {
 
   string input;
   while (true) {
+    reap_background_jobs();
     for (ptrdiff_t index : background_job_display_order()) {
       if (background_jobs[index].status == JobStatus::Done) print_job_line(index);
     }
-    
+    purge_done_jobs();
+
     char* line = readline("$ ");
     if (!line) {
       break;
