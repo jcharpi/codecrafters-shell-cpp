@@ -8,6 +8,7 @@
 #include <string>
 #include <string_view>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <utility>
 #include <vector>
 
@@ -53,4 +54,24 @@ inline vector<ptrdiff_t> background_job_display_order() {
   ranges::iota(indices, 0);
   ranges::sort(indices, {}, [](ptrdiff_t index) { return background_jobs[index].job_number; });
   return indices;
+}
+
+inline void reap_background_jobs() {
+  for (Job& background_job : background_jobs) {
+    int wait_status = 0;
+    pid_t result = waitpid(background_job.pid, &wait_status, WNOHANG);
+    if (result == 0) continue; // still running
+
+    background_job.status = JobStatus::Done;
+    if (result == background_job.pid && WIFEXITED(wait_status)) {
+      background_job.exit_status = WEXITSTATUS(wait_status);
+    }
+
+  }
+}
+
+inline void purge_done_jobs() {
+  erase_if(background_jobs, [](const Job& background_job) {
+    return background_job.status == JobStatus::Done;
+  });
 }

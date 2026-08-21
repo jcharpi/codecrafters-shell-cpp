@@ -82,11 +82,13 @@ inline void handle_exit(const vector<string>&) { exit(EXIT_SUCCESS); }
 //   [1]-  Running                 sleep 10
 //   [2]+  Running                 sleep 20
 inline void handle_jobs(const vector<string>&) {
+  reap_background_jobs();
   for (ptrdiff_t index : background_job_display_order()) {
     const Job& background_job = background_jobs[index];
     println(cout, "[{}]{}  {:<24}{}", background_job.job_number, job_marker(index), background_job.status,
             background_job.command_line);
   }
+  purge_done_jobs();
 }
 
 inline void handle_pwd(const vector<string>&) { println(cout, "{}", filesystem::current_path().string()); }
