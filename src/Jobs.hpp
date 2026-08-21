@@ -34,19 +34,9 @@ template <> struct std::formatter<JobStatus> : std::formatter<string_view> {
 };
 
 inline vector<Job> background_jobs;
-
-// TODO: replace the first line below with "1 if the table is empty, otherwise the
-// highest number in it plus 1". <ranges> isn't included yet if you go this way:
-//
-//   auto job_numbers = background_jobs | views::transform(&Job::job_number);
-//   int job_number = job_numbers.empty() ? 1 : ranges::max(job_numbers) + 1;
-//
-// background_jobs.back().job_number happens to give the same answer today, since
-// max+1 assignment keeps insertion order and number order aligned. Scanning for the
-// max doesn't depend on that holding.
 inline int add_job(pid_t pid, string command_line) {
   auto job_numbers = background_jobs | ranges::views::transform(&Job::job_number);
-  int job_number = background_jobs.empty() ? 1 : ranges::max(job_numbers);
+  int job_number = background_jobs.empty() ? 1 : ranges::max(job_numbers) + 1;
   background_jobs.push_back(Job{job_number, pid, std::move(command_line)});
   return job_number;
 }
