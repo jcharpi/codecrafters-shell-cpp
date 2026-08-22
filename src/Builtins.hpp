@@ -106,17 +106,21 @@ inline void handle_type(const vector<string>& args) {
 }
 
 inline void handle_history(const vector<string>& args) {
+  const string& option = ssize(args) > 1 ? args[1] : "";
+  if (ssize(args) >= 3 && option == "-r") {
+    read_history(args[2].c_str());
+    return;
+  }
 
   int start = history_base;
-  if (ssize(args) > 1) {
-    const string& count_arg = args[1];
+  if (!option.empty()) {
     int count = 0;
-    const char* last = count_arg.c_str() + ssize(count_arg);
+    const char* last = option.c_str() + ssize(option);
 
     // parse arg to int
-    auto [end, error] = from_chars(count_arg.c_str(), last, count);
+    auto [end, error] = from_chars(option.c_str(), last, count);
     if (error != errc{} || end != last || count < 0) {
-      println(cerr, "history: {}: numeric argument required", count_arg);
+      println(cerr, "history: {}: numeric argument required", option);
       return;
     }
 
