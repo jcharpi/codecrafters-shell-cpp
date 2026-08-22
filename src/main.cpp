@@ -1,11 +1,12 @@
-#include <cstdlib> // free
+#include <cstdlib>
 #include <iostream>
 #include <print>
 #include <ranges>
+#include <readline/history.h>
 #include <readline/readline.h>
 #include <string>
-#include <unistd.h> // STDOUT_FILENO, STDERR_FILENO
-#include <utility>  // move
+#include <unistd.h>
+#include <utility>
 #include <vector>
 
 #include "ArgSplitter.hpp"
@@ -38,6 +39,8 @@ int main() {
     }
     input = line;
     free(line);
+
+    if (input.find_first_not_of(" \t") != string::npos) add_history(input.c_str());
 
     Pipeline pipeline = parse_pipeline(split_args(input));
     if (ssize(pipeline.commands) > 1) {

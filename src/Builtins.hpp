@@ -2,7 +2,8 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstdlib> // getenv, exit
+#include <cstdlib>
+#include <readline/history.h>
 #include <filesystem>
 #include <functional>
 #include <iostream>
@@ -103,7 +104,11 @@ inline void handle_type(const vector<string>& args) {
   }
 }
 
-inline void handle_history(const vector<string>&) {}
+inline void handle_history(const vector<string>&) {
+  for (int i = history_base; i < history_base + history_length; i++) {
+    if (HIST_ENTRY* historical_entry = history_get(i)) println(cout, "{:>5}  {}", i, historical_entry -> line);
+  }
+}
 
 using BuiltinHandler = function<void(const vector<string>&)>;
 
