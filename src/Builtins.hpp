@@ -107,9 +107,16 @@ inline void handle_type(const vector<string>& args) {
 
 inline void handle_history(const vector<string>& args) {
   const string& option = ssize(args) > 1 ? args[1] : "";
-  if (ssize(args) >= 3 && option == "-r") {
-    read_history(args[2].c_str());
-    return;
+  if (ssize(args) >= 3) {
+    const string& path = args[2];
+    if (option == "-r") {
+      read_history(path.c_str());
+      return;
+    }
+    if (option == "-w") {
+      write_history(path.c_str());
+      return;
+    }
   }
 
   int start = history_base;
