@@ -17,16 +17,15 @@ struct Command {
   vector<string> args;
   optional<Redirect> stdout_redirect;
   optional<Redirect> stderr_redirect;
+};
+
+struct Pipeline {
+  vector<Command> commands;
   bool background = false;
 };
 
 inline Command parse_command(vector<string> args) {
   Command command;
-
-  if (!args.empty() && args.back() == "&") {
-    command.background = true;
-    args.pop_back();
-  }
 
   for (ptrdiff_t i = 0; i < ssize(args); i++) {
     const string& arg = args[i];
@@ -52,4 +51,26 @@ inline Command parse_command(vector<string> args) {
     }
   }
   return command;
+}
+
+inline Pipeline parse_pipeline(vector<string> args) {
+  Pipeline pipeline;
+
+  if (!args.empty() && args.back() == "&") {
+    pipeline.background = true;
+    args.pop_back();
+  }
+
+  vector<string> segment;
+  for (string& arg : args) {
+    if (arg == "|") {
+      pipeline.commands.push_back(parse_command(std::move(segment)));
+      segment.clear();
+    } else {
+      segment.push_back(std::move(arg));
+    }
+  }
+  pipeline.commands.push_back(parse_command(std::move(segment)));
+
+  return pipeline;
 }

@@ -1,23 +1,27 @@
 #pragma once
 
-#include <cstdlib> // exit, EXIT_FAILURE
+#include <cstddef>
+#include <cstdlib>
 #include <iostream>
 #include <print>
 #include <string>
-#include <sys/wait.h> // waitpid
-#include <unistd.h>   // execvp, fork
+#include <sys/wait.h>
+#include <unistd.h>
 #include <vector>
 
 using namespace std;
 
-inline pid_t spawn_executable(const string& file_path, vector<string>& args) {
+inline void exec_command(const string& file_path, vector<string>& args) {
   vector<char*> argv;
   argv.reserve(ssize(args) + 1); // +1 for the null terminator execvp requires
   for (string& arg : args) {
     argv.push_back(arg.data());
   }
   argv.push_back(nullptr);
+  execvp(file_path.c_str(), argv.data());
+}
 
+inline pid_t spawn_executable(const string& file_path, vector<string>& args) {
   pid_t pid = fork();
   if (pid == -1) {
     println(cerr, "spawn_executable(): fork failed");
@@ -25,7 +29,7 @@ inline pid_t spawn_executable(const string& file_path, vector<string>& args) {
   }
 
   if (pid == 0) {
-    execvp(file_path.c_str(), argv.data());
+    exec_command(file_path, args);
     println(cerr, "spawn_executable(): execute failed");
     exit(EXIT_FAILURE);
   }

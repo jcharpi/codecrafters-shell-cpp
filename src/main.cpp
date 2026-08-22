@@ -14,6 +14,7 @@
 #include "Completion.hpp"
 #include "Executables.hpp"
 #include "Jobs.hpp"
+#include "Pipeline.hpp"
 #include "Process.hpp"
 #include "Redirection.hpp"
 
@@ -38,7 +39,13 @@ int main() {
     input = line;
     free(line);
 
-    Command command = parse_command(split_args(input));
+    Pipeline pipeline = parse_pipeline(split_args(input));
+    if (ssize(pipeline.commands) > 1) {
+      run_pipeline(pipeline.commands);
+      continue;
+    }
+
+    Command command = std::move(pipeline.commands.front());
     vector<string> args = std::move(command.args);
     if (args.empty()) {
       continue;
@@ -50,10 +57,10 @@ int main() {
     int saved_err = redirect_stream(STDERR_FILENO, command.stderr_redirect);
     pid_t background_pid = -1;
 
-    if (auto builtin = builtins.find(command_name); builtin != builtins.end()) {
-      builtin->second(args);
+    if (const BuiltinHandler* builtin_handler = find_builtin(command_name)) {
+      (*builtin_handler)(args);
     } else if (string file_path = executable_in_path(command_name); !file_path.empty()) {
-      if (command.background) {
+      if (pipeline.background) {
         background_pid = spawn_executable(file_path, args);
       } else {
         handle_executable(file_path, args);

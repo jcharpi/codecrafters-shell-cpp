@@ -108,3 +108,8 @@ using BuiltinHandler = function<void(const vector<string>&)>;
 inline const unordered_map<string, BuiltinHandler> builtins{
     {"cd", handle_cd},     {"complete", handle_complete}, {"echo", handle_echo}, {"exit", handle_exit},
     {"jobs", handle_jobs}, {"pwd", handle_pwd},           {"type", handle_type}};
+
+inline const BuiltinHandler* find_builtin(const string& name) {
+  auto builtin = builtins.find(name);
+  return builtin == builtins.end() ? nullptr : &builtin->second;
+}
