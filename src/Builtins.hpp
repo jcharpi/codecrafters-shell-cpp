@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <print>
@@ -105,16 +106,35 @@ inline void handle_type(const vector<string>& args) {
   }
 }
 
+inline int written_history_marker = 0;
 inline void handle_history(const vector<string>& args) {
   const string& option = ssize(args) > 1 ? args[1] : "";
   if (ssize(args) >= 3) {
-    const string& path = args[2];
+    const string& file_path = args[2];
     if (option == "-r") {
-      read_history(path.c_str());
+      read_history(file_path.c_str());
+      written_history_marker = history_length;
       return;
     }
+
     if (option == "-w") {
-      write_history(path.c_str());
+      write_history(file_path.c_str());
+      written_history_marker = history_length;
+      return;
+    }
+
+    if (option == "-a") {
+      int pending_history_marker = history_length - written_history_marker;
+      if (pending_history_marker <= 0) return;
+
+      // if file to append to doesn't exist, create it, then retry
+      if (append_history(pending_history_marker, file_path.c_str()) != 0) {
+        ofstream create_file{file_path, ios::app};
+        create_file.close();
+        append_history(pending_history_marker, file_path.c_str());
+      }
+
+      written_history_marker = history_length;
       return;
     }
   }
