@@ -1,13 +1,14 @@
 #pragma once
 
 #include <algorithm>
+#include <charconv>
 #include <cstddef>
 #include <cstdlib>
-#include <readline/history.h>
 #include <filesystem>
 #include <functional>
 #include <iostream>
 #include <print>
+#include <readline/history.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -104,9 +105,26 @@ inline void handle_type(const vector<string>& args) {
   }
 }
 
-inline void handle_history(const vector<string>&) {
-  for (int i = history_base; i < history_base + history_length; i++) {
-    if (HIST_ENTRY* historical_entry = history_get(i)) println(cout, "{:>5}  {}", i, historical_entry -> line);
+inline void handle_history(const vector<string>& args) {
+
+  int start = history_base;
+  if (ssize(args) > 1) {
+    const string& count_arg = args[1];
+    int count = 0;
+    const char* last = count_arg.c_str() + ssize(count_arg);
+
+    // parse arg to int
+    auto [end, error] = from_chars(count_arg.c_str(), last, count);
+    if (error != errc{} || end != last || count < 0) {
+      println(cerr, "history: {}: numeric argument required", count_arg);
+      return;
+    }
+
+    start = max(history_base, history_base + history_length - count);
+  }
+
+  for (int i = start; i < history_base + history_length; i++) {
+    if (HIST_ENTRY* historical_entry = history_get(i)) println(cout, "{:>5}  {}", i, historical_entry->line);
   }
 }
 
