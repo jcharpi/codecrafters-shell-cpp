@@ -19,7 +19,7 @@ using namespace std;
 
 // Kept alphabetical, as are the handlers below and the `builtins` map at the
 // bottom. Nothing enforces the three agree, so a new builtin means three edits.
-inline const vector<string> builtin_names{"cd", "complete", "echo", "exit", "jobs", "pwd", "type"};
+inline const vector<string> builtin_names{"cd", "complete", "echo", "exit", "jobs", "pwd", "type", "history"};
 
 inline void handle_cd(const vector<string>& args) {
   if (ssize(args) < 2) return;
@@ -103,11 +103,13 @@ inline void handle_type(const vector<string>& args) {
   }
 }
 
+inline void handle_history(const vector<string>&) {}
+
 using BuiltinHandler = function<void(const vector<string>&)>;
 
 inline const unordered_map<string, BuiltinHandler> builtins{
     {"cd", handle_cd},     {"complete", handle_complete}, {"echo", handle_echo}, {"exit", handle_exit},
-    {"jobs", handle_jobs}, {"pwd", handle_pwd},           {"type", handle_type}};
+    {"jobs", handle_jobs}, {"pwd", handle_pwd},           {"type", handle_type}, {"history", handle_history}};
 
 inline const BuiltinHandler* find_builtin(const string& name) {
   auto builtin = builtins.find(name);
