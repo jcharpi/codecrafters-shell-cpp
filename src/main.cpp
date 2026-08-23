@@ -24,6 +24,7 @@ int main() {
   cerr << unitbuf;
 
   setup_completion();
+  if (const char* history_file = getenv("HISTFILE")) load_history_file(history_file);
 
   string input;
   while (true) {

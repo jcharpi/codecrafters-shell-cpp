@@ -107,13 +107,18 @@ inline void handle_type(const vector<string>& args) {
 }
 
 inline int written_history_marker = 0;
+
+inline void load_history_file(const string& file_path) {
+  read_history(file_path.c_str());
+  written_history_marker = history_length;
+}
+
 inline void handle_history(const vector<string>& args) {
   const string& option = ssize(args) > 1 ? args[1] : "";
   if (ssize(args) >= 3) {
     const string& file_path = args[2];
     if (option == "-r") {
-      read_history(file_path.c_str());
-      written_history_marker = history_length;
+      load_history_file(file_path);
       return;
     }
 
