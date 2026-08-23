@@ -18,6 +18,7 @@
 #include "CompletionRegistry.hpp"
 #include "Executables.hpp"
 #include "Jobs.hpp"
+#include "Variables.hpp"
 
 using namespace std;
 
@@ -188,7 +189,19 @@ inline void handle_history(const vector<string>& args) {
   }
 }
 
-inline void handle_declare(const vector<string>&) {}
+inline void handle_declare(const vector<string>& args) {
+  const string& option = ssize(args) > 1 ? args[1] : "";
+  if (option == "-p") {
+    if (ssize(args) < 3) return;
+
+    const string& name = args[2];
+    auto variable = shell_variables.find(name);
+    if (variable == shell_variables.end()) {
+      println(cerr, "declare: {}: not found", name);
+      return;
+    }
+  }
+}
 
 using BuiltinHandler = function<void(const vector<string>&)>;
 
