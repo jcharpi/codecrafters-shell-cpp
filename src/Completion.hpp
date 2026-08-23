@@ -1,7 +1,7 @@
 #pragma once
 
+#include <cstdio>
 #include <readline/readline.h>
-
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -85,7 +85,8 @@ inline char** try_completion(const char* text, int start, int /*end*/) {
     if (const string* script = registered_completer_for(line_words.front())) {
       const string COMP_LINE = rl_line_buffer;
       const size_t COMP_POINT = rl_point;
-      completer_candidates = run_completer_script(*script, line_words.front(), text, line_words.back(), COMP_LINE, COMP_POINT);
+      completer_candidates =
+          run_completer_script(*script, line_words.front(), text, line_words.back(), COMP_LINE, COMP_POINT);
       return rl_completion_matches(text, complete_registered_generator);
     }
   }
