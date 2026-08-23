@@ -200,6 +200,20 @@ inline void handle_declare(const vector<string>& args) {
       println(cerr, "declare: {}: not found", variable_name);
       return;
     }
+
+    println(cout, "declare -- {}=\"{}\"", variable_name, variable->second);
+    return;
+  }
+
+  for (const string& declaration : args | views::drop(1)) {
+    size_t separator = declaration.find('=');
+
+    if (separator == string::npos) continue;
+
+    string name = declaration.substr(0, separator);
+    string value = declaration.substr(separator + 1);
+
+    shell_variables[name] = value;
   }
 }
 
