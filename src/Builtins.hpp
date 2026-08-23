@@ -24,8 +24,8 @@ using namespace std;
 
 // Kept alphabetical, as are the handlers below and the `builtins` map at the
 // bottom. Nothing enforces the three agree, so a new builtin means three edits.
-inline const vector<string> builtin_names{"cd",  "complete", "echo",    "exit",   "jobs",
-                                          "pwd", "type",     "history", "declare"};
+inline const vector<string> builtin_names{"cd",   "complete", "declare", "echo", "exit",
+                                          "history", "jobs",  "pwd",     "type"};
 
 inline optional<int> parse_int(const string& text) {
   int value = 0;
@@ -82,6 +82,39 @@ inline void handle_complete(const vector<string>& args) {
   }
 }
 
+inline void handle_declare(const vector<string>& args) {
+  const string& option = ssize(args) > 1 ? args[1] : "";
+  if (option == "-p") {
+    if (ssize(args) < 3) return;
+
+    const string& variable_name = args[2];
+    auto variable = shell_variables.find(variable_name);
+    if (variable == shell_variables.end()) {
+      println(cerr, "declare: {}: not found", variable_name);
+      return;
+    }
+
+    println(cout, "declare -- {}=\"{}\"", variable_name, variable->second);
+    return;
+  }
+
+  for (const string& declaration : args | views::drop(1)) {
+    size_t separator = declaration.find('=');
+
+    if (separator == string::npos) continue;
+
+    string name = declaration.substr(0, separator);
+    string value = declaration.substr(separator + 1);
+
+    if (!is_valid_identifier(name)) {
+      println(cerr, "declare: `{}': not a valid identifier", declaration);
+      continue;
+    }
+
+    shell_variables[name] = value;
+  }
+}
+
 inline void handle_echo(const vector<string>& args) {
   for (ptrdiff_t i = 1; i < ssize(args); i++) {
     print(cout, "{}{}", i > 1 ? " " : "", args[i]);
@@ -102,32 +135,6 @@ inline void handle_exit(const vector<string>& args) {
   }
   if (in_subshell) _exit(status);
   exit(status);
-}
-
-// Lists the background jobs in job-number order. The status sits
-// in a 24-character field whose padding is what separates it from the command:
-//   [1]-  Running                 sleep 10
-//   [2]+  Running                 sleep 20
-inline void handle_jobs(const vector<string>&) {
-  reap_background_jobs();
-  for (ptrdiff_t index : background_job_display_order()) {
-    print_job_line(index);
-  }
-  purge_done_jobs();
-}
-
-inline void handle_pwd(const vector<string>&) { println(cout, "{}", filesystem::current_path().string()); }
-
-inline void handle_type(const vector<string>& args) {
-  const string& target = ssize(args) > 1 ? args[1] : "";
-
-  if (ranges::contains(builtin_names, target)) {
-    println(cout, "{} is a shell builtin", target);
-  } else if (string file_path = executable_in_path(target); !file_path.empty()) {
-    println(cout, "{} is {}", target, file_path);
-  } else {
-    println(cout, "{}: not found", target);
-  }
 }
 
 inline int written_history_marker = 0;
@@ -189,45 +196,38 @@ inline void handle_history(const vector<string>& args) {
   }
 }
 
-inline void handle_declare(const vector<string>& args) {
-  const string& option = ssize(args) > 1 ? args[1] : "";
-  if (option == "-p") {
-    if (ssize(args) < 3) return;
-
-    const string& variable_name = args[2];
-    auto variable = shell_variables.find(variable_name);
-    if (variable == shell_variables.end()) {
-      println(cerr, "declare: {}: not found", variable_name);
-      return;
-    }
-
-    println(cout, "declare -- {}=\"{}\"", variable_name, variable->second);
-    return;
+// Lists the background jobs in job-number order. The status sits
+// in a 24-character field whose padding is what separates it from the command:
+//   [1]-  Running                 sleep 10
+//   [2]+  Running                 sleep 20
+inline void handle_jobs(const vector<string>&) {
+  reap_background_jobs();
+  for (ptrdiff_t index : background_job_display_order()) {
+    print_job_line(index);
   }
+  purge_done_jobs();
+}
 
-  for (const string& declaration : args | views::drop(1)) {
-    size_t separator = declaration.find('=');
+inline void handle_pwd(const vector<string>&) { println(cout, "{}", filesystem::current_path().string()); }
 
-    if (separator == string::npos) continue;
+inline void handle_type(const vector<string>& args) {
+  const string& target = ssize(args) > 1 ? args[1] : "";
 
-    string name = declaration.substr(0, separator);
-    string value = declaration.substr(separator + 1);
-
-    if (!is_valid_identifier(name)) {
-      println(cerr, "declare: `{}': not a valid identifier", declaration);
-      continue;
-    }
-
-    shell_variables[name] = value;
+  if (ranges::contains(builtin_names, target)) {
+    println(cout, "{} is a shell builtin", target);
+  } else if (string file_path = executable_in_path(target); !file_path.empty()) {
+    println(cout, "{} is {}", target, file_path);
+  } else {
+    println(cout, "{}: not found", target);
   }
 }
 
 using BuiltinHandler = function<void(const vector<string>&)>;
 
 inline const unordered_map<string, BuiltinHandler> builtins{
-    {"cd", handle_cd},     {"complete", handle_complete}, {"echo", handle_echo},
-    {"exit", handle_exit}, {"jobs", handle_jobs},         {"pwd", handle_pwd},
-    {"type", handle_type}, {"history", handle_history},   {"declare", handle_declare}};
+    {"cd", handle_cd},           {"complete", handle_complete}, {"declare", handle_declare},
+    {"echo", handle_echo},       {"exit", handle_exit},         {"history", handle_history},
+    {"jobs", handle_jobs},       {"pwd", handle_pwd},           {"type", handle_type}};
 
 inline const BuiltinHandler* find_builtin(const string& name) {
   auto builtin = builtins.find(name);

@@ -73,14 +73,14 @@ private:
     return arg;
   }
 
-  inline void append_value(string& arg, const string& name) {
+  void append_value(string& arg, const string& name) {
     if (auto variable = shell_variables.find(name); variable != shell_variables.end()) {
       arg += variable->second;
     } else if (const char* value = getenv(name.c_str()))
       arg += value;
   }
 
-  inline void read_variable(string& arg) {
+  void read_variable(string& arg) {
     if (try_consume_char('{')) {
       string name;
       while (!at_end() && peek() != '}')

@@ -83,7 +83,6 @@ inline char** try_completion(const char* text, int start, int /*end*/) {
   vector<string> line_words = split_args(string(rl_line_buffer).substr(0, start));
   if (!line_words.empty()) {
     if (const string* script = registered_completer_for(line_words.front())) {
-      const string previous_word = ssize(line_words) > 1 ? line_words.back() : "";
       const string COMP_LINE = rl_line_buffer;
       const size_t COMP_POINT = rl_point;
       completer_candidates = run_completer_script(*script, line_words.front(), text, line_words.back(), COMP_LINE, COMP_POINT);

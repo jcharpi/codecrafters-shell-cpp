@@ -53,7 +53,7 @@ inline pid_t spawn_pipeline_stage(Command& command, int stdin_fd, const Pipe& to
   redirect_stream(STDOUT_FILENO, command.stdout_redirect);
   redirect_stream(STDERR_FILENO, command.stderr_redirect);
 
-   if (command.args.empty()) _exit(EXIT_SUCCESS);
+  if (command.args.empty()) _exit(EXIT_SUCCESS);
   const string& command_name = command.args[0];
 
   if (const BuiltinHandler* builtin_handler = find_builtin(command_name)) {
