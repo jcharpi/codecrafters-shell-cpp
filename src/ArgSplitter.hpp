@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Variables.hpp"
 #include <cctype>
+#include <cstdlib>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -61,11 +63,28 @@ private:
         read_single_quote_section(arg);
       } else if (current == '"') {
         read_double_quote_section(arg);
+      } else if (current == '$') {
+        advance();
+        read_variable(arg);
       } else {
         arg += advance();
       }
     }
     return arg;
+  }
+
+  inline void read_variable(string& arg) {
+    if (!is_valid_start(peek())) {
+      arg += '$';
+      return;
+    }
+
+    string name;
+    while (!at_end() && is_valid_name_char(peek())) name += advance();
+
+    if (auto variable = shell_variables.find(name); variable != shell_variables.end()) {
+      arg += variable->second;
+    } else if (const char* value = getenv(name.c_str())) arg += value;
   }
 
   void read_single_quote_section(string& arg) {
@@ -77,7 +96,6 @@ private:
   }
 
   void read_double_quote_section(string& arg) {
-
     auto is_escapable = [](char c) { return c == '"' || c == '\\' || c == '$' || c == '`' || c == '\n'; };
 
     advance();
@@ -85,6 +103,8 @@ private:
       char current = advance();
       if (current == '\\' && !at_end() && is_escapable(peek())) {
         arg += advance();
+      } else if (current == '$') {
+        read_variable(arg);
       } else {
         arg += current;
       }
