@@ -213,6 +213,11 @@ inline void handle_declare(const vector<string>& args) {
     string name = declaration.substr(0, separator);
     string value = declaration.substr(separator + 1);
 
+    if (!is_valid_identifier(name)) {
+      println(cerr, "declare: `{}': not a valid identifier", declaration);
+      continue;
+    }
+
     shell_variables[name] = value;
   }
 }
