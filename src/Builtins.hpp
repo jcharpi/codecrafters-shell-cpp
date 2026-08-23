@@ -194,10 +194,10 @@ inline void handle_declare(const vector<string>& args) {
   if (option == "-p") {
     if (ssize(args) < 3) return;
 
-    const string& name = args[2];
-    auto variable = shell_variables.find(name);
+    const string& variable_name = args[2];
+    auto variable = shell_variables.find(variable_name);
     if (variable == shell_variables.end()) {
-      println(cerr, "declare: {}: not found", name);
+      println(cerr, "declare: {}: not found", variable_name);
       return;
     }
   }
