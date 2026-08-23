@@ -73,18 +73,35 @@ private:
     return arg;
   }
 
+  inline void append_value(string& arg, const string& name) {
+    if (auto variable = shell_variables.find(name); variable != shell_variables.end()) {
+      arg += variable->second;
+    } else if (const char* value = getenv(name.c_str()))
+      arg += value;
+  }
+
   inline void read_variable(string& arg) {
+    if (try_consume_char('{')) {
+      string name;
+      while (!at_end() && peek() != '}')
+        name += advance();
+      if (!try_consume_char('}')) { /* unterminated */
+      }
+
+      append_value(arg, name);
+      return;
+    }
+
     if (!is_valid_start(peek())) {
       arg += '$';
       return;
     }
 
     string name;
-    while (!at_end() && is_valid_name_char(peek())) name += advance();
+    while (!at_end() && is_valid_name_char(peek()))
+      name += advance();
 
-    if (auto variable = shell_variables.find(name); variable != shell_variables.end()) {
-      arg += variable->second;
-    } else if (const char* value = getenv(name.c_str())) arg += value;
+    append_value(arg, name);
   }
 
   void read_single_quote_section(string& arg) {
