@@ -31,7 +31,7 @@ inline pid_t spawn_executable(const string& file_path, vector<string>& args) {
   if (pid == 0) {
     exec_command(file_path, args);
     println(cerr, "spawn_executable(): execute failed");
-    exit(EXIT_FAILURE);
+    _exit(EXIT_FAILURE);
   }
 
   return pid;

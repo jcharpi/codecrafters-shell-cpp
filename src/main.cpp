@@ -26,6 +26,10 @@ int main() {
   setup_completion();
   if (const char* history_file = getenv("HISTFILE")) load_history_file(history_file);
 
+  atexit([] {
+    if (const char* history_file = getenv("HISTFILE")) save_history_file(history_file);
+  }); 
+  
   string input;
   while (true) {
     reap_background_jobs();

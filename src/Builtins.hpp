@@ -8,6 +8,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <optional>
 #include <print>
 #include <readline/history.h>
 #include <string>
@@ -23,6 +24,14 @@ using namespace std;
 // Kept alphabetical, as are the handlers below and the `builtins` map at the
 // bottom. Nothing enforces the three agree, so a new builtin means three edits.
 inline const vector<string> builtin_names{"cd", "complete", "echo", "exit", "jobs", "pwd", "type", "history"};
+
+inline optional<int> parse_int(const string& text) {
+  int value = 0;
+  const char* last = text.c_str() + ssize(text);
+  auto [end, error] = from_chars(text.c_str(), last, value);
+  if (error != errc{} || end != last) return nullopt;
+  return value;
+}
 
 inline void handle_cd(const vector<string>& args) {
   if (ssize(args) < 2) return;
@@ -78,7 +87,20 @@ inline void handle_echo(const vector<string>& args) {
   println(cout);
 }
 
-inline void handle_exit(const vector<string>&) { exit(EXIT_SUCCESS); }
+inline bool in_subshell = false;
+inline void handle_exit(const vector<string>& args) {
+  int status = EXIT_SUCCESS;
+  if (ssize(args) > 1) {
+    if (optional<int> parsed = parse_int(args[1])) {
+      status = *parsed;
+    } else {
+      println(cerr, "exit: {}: numeric argument required", args[1]);
+      status = 2;
+    }
+  }
+  if (in_subshell) _exit(status);
+  exit(status);
+}
 
 // Lists the background jobs in job-number order. The status sits
 // in a 24-character field whose padding is what separates it from the command:
@@ -113,50 +135,51 @@ inline void load_history_file(const string& file_path) {
   written_history_marker = history_length;
 }
 
+inline void save_history_file(const string& file_path) {
+  write_history(file_path.c_str());
+  written_history_marker = history_length;
+}
+
+inline void append_history_file(const string& file_path) {
+  int pending_history_marker = history_length - written_history_marker;
+  if (pending_history_marker <= 0) return;
+
+  // if file to append to doesn't exist, create it, then retry
+  if (append_history(pending_history_marker, file_path.c_str()) != 0) {
+    ofstream create_file{file_path, ios::app};
+    create_file.close();
+    append_history(pending_history_marker, file_path.c_str());
+  }
+
+  written_history_marker = history_length;
+}
+
 inline void handle_history(const vector<string>& args) {
   const string& option = ssize(args) > 1 ? args[1] : "";
-  if (ssize(args) >= 3) {
-    const string& file_path = args[2];
-    if (option == "-r") {
+  if (option == "-r" || option == "-w" || option == "-a") {
+    const char* history_file = getenv("HISTFILE");
+    // use provided path, otherwise use HISTFILE as fallback
+    string file_path = ssize(args) >= 3 ? args[2] : (history_file ? history_file : "");
+    if (file_path.empty()) return;
+
+    if (option == "-r")
       load_history_file(file_path);
-      return;
-    }
-
-    if (option == "-w") {
-      write_history(file_path.c_str());
-      written_history_marker = history_length;
-      return;
-    }
-
-    if (option == "-a") {
-      int pending_history_marker = history_length - written_history_marker;
-      if (pending_history_marker <= 0) return;
-
-      // if file to append to doesn't exist, create it, then retry
-      if (append_history(pending_history_marker, file_path.c_str()) != 0) {
-        ofstream create_file{file_path, ios::app};
-        create_file.close();
-        append_history(pending_history_marker, file_path.c_str());
-      }
-
-      written_history_marker = history_length;
-      return;
-    }
+    else if (option == "-w")
+      save_history_file(file_path);
+    else
+      append_history_file(file_path);
+    return;
   }
 
   int start = history_base;
   if (!option.empty()) {
-    int count = 0;
-    const char* last = option.c_str() + ssize(option);
-
-    // parse arg to int
-    auto [end, error] = from_chars(option.c_str(), last, count);
-    if (error != errc{} || end != last || count < 0) {
+    optional<int> count = parse_int(option);
+    if (!count || *count < 0) {
       println(cerr, "history: {}: numeric argument required", option);
       return;
     }
 
-    start = max(history_base, history_base + history_length - count);
+    start = max(history_base, history_base + history_length - *count);
   }
 
   for (int i = start; i < history_base + history_length; i++) {

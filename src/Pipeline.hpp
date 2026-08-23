@@ -39,9 +39,7 @@ inline pid_t spawn_pipeline_stage(Command& command, int stdin_fd, const Pipe& to
   }
 
   if (pid != 0) return pid;
-
-  // The fork copied both ends of that pipe to us, but this command only writes into it;
-  // the read end belongs to the next command.
+  in_subshell = true;
   if (to_next.read_fd != -1) close(to_next.read_fd);
 
   // Point our stdin slot at the previous command's pipe and our stdout slot at the
